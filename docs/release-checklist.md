@@ -6,7 +6,7 @@ From the planning guide, adapted to this codebase. Nothing here is done automati
 
 - [ ] Validation gates passed (competitor teardown, interviews, prototype, concierge test).
 - [ ] Name, domain and trademarks cleared; update `app.json` name, slug, bundle IDs.
-- [ ] Replace `SUPPORT_EMAIL` in `src/constants/app-info.ts` with a monitored inbox.
+- [x] `SUPPORT_EMAIL` set to support@idexa.app; privacy policy at https://idexa.app/refund-beacon/privacy/ (source: `docs/privacy-policy/index.html`).
 - [ ] Privacy policy and terms reviewed; in-app copy (`src/app/privacy.tsx`) matches them.
 - [ ] Store descriptions make no promise of recovering money.
 

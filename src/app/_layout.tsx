@@ -13,6 +13,7 @@ import {
   Stack,
   ThemeProvider,
 } from 'expo-router';
+import { NavigationBar } from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
@@ -75,6 +76,8 @@ function AppNavigator() {
     <ThemeProvider value={navigationTheme}>
       <AppLifecycle />
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      {/* The app draws behind the system buttons; tint them for the page background. */}
+      <NavigationBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
       >
@@ -120,7 +123,7 @@ function DatabaseError() {
     <View style={[styles.error, { backgroundColor: colors.background }]}>
       <AppText variant="headline">Your data couldn’t be opened</AppText>
       <AppText variant="body" tone="muted">
-        RefundBeacon couldn’t update its local database. Your cases haven’t been deleted. Please
+        Refund Beacon couldn’t update its local database. Your cases haven’t been deleted. Please
         restart the app; if this keeps happening, contact support from the app store listing.
       </AppText>
     </View>

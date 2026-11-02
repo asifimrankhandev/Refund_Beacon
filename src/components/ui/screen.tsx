@@ -1,5 +1,6 @@
 import { useScrollToTop } from 'expo-router';
-import { type ComponentRef, type ReactNode, useRef } from 'react';
+import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
+import { type ComponentRef, type ReactNode, use, useRef } from 'react';
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -19,6 +20,7 @@ export interface ScreenProps {
   header?: ReactNode;
   /** Sticky footer (actions); the content scrolls behind it. */
   footer?: ReactNode;
+  /** Without scrolling, the children own their list padding (including tab bar clearance). */
   scroll?: boolean;
   edges?: Edge[];
   contentStyle?: StyleProp<ViewStyle>;
@@ -35,12 +37,15 @@ export function Screen({
 }: ScreenProps) {
   const { colors } = useTheme();
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  // Inside the tabs the floating tab bar overlaps the screen, so leave room to scroll past it.
+  const tabBarHeight = use(BottomTabBarHeightContext) ?? 0;
+  const tabBarClearance = tabBarHeight > 0 ? { paddingBottom: tabBarHeight + spacing.lg } : null;
   // Tapping the active tab again scrolls its root screen back to the top.
   useScrollToTop(scrollRef);
   const content = scroll ? (
     <ScrollView
       ref={scrollRef}
-      contentContainerStyle={[styles.scrollContent, contentStyle]}
+      contentContainerStyle={[styles.scrollContent, contentStyle, tabBarClearance]}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive"
       contentInsetAdjustmentBehavior="never"

@@ -24,7 +24,7 @@ export function BottomBar({ children, note }: BottomBarProps) {
         {
           backgroundColor: colors.background,
           borderTopColor: colors.line,
-          paddingBottom: Math.max(insets.bottom, spacing.lg),
+          paddingBottom: insets.bottom + spacing.md,
         },
       ]}
     >

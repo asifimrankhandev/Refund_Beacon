@@ -172,12 +172,16 @@ export default function SettingsScreen() {
           />
         </SettingsSlot>
         <SettingsRow label="Currency" value="US Dollar (USD)" />
+        <SettingsRow
+          label="How Refund Beacon works"
+          onPress={() => router.push({ pathname: '/welcome', params: { replay: '1' } })}
+        />
         <SettingsRow label="Privacy & terms" onPress={() => router.push('/privacy')} />
         <SettingsRow
           label="Contact support"
           value={`v${Constants.expoConfig?.version ?? '1.0.0'}`}
           onPress={() =>
-            void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=RefundBeacon%20support`)
+            void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Refund%20Beacon%20support`)
           }
           accessibilityHint="Opens your email app. Don’t include receipts or card details."
         />

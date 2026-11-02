@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { SectionHeader } from '@/components/ui/section-header';
 import { TopBar } from '@/components/ui/top-bar';
+import { PRIVACY_POLICY_URL } from '@/constants/app-info';
 import { OFFICIAL_SOURCES } from '@/domain/official-sources';
 import { spacing } from '@/theme/tokens';
 
 const SECTIONS = [
   {
     title: 'What stays on your device',
-    body: 'Cases, timelines, amounts, reminders and evidence files are stored only in this app’s private storage. There is no account, no server and no analytics. RefundBeacon never connects to your inbox, bank, card or retailer accounts.',
+    body: 'Cases, timelines, amounts, reminders and evidence files are stored only in this app’s private storage. There is no account, no server and no analytics. Refund Beacon never connects to your inbox, bank, card or retailer accounts.',
   },
   {
     title: 'What leaves your device',
@@ -28,7 +29,7 @@ const SECTIONS = [
   },
   {
     title: 'Terms',
-    body: 'RefundBeacon helps you organize information you enter. It does not issue refunds, contact retailers, file disputes or give legal or financial advice, and it can’t guarantee any outcome. Next-step suggestions are general guidance based on the facts you recorded. Refund rules vary by retailer, payment method and circumstances — check the retailer’s policy and your card agreement.',
+    body: 'Refund Beacon helps you organize information you enter. It does not issue refunds, contact retailers, file disputes or give legal or financial advice, and it can’t guarantee any outcome. Next-step suggestions are general guidance based on the facts you recorded. Refund rules vary by retailer, payment method and circumstances — check the retailer’s policy and your card agreement.',
   },
 ] as const;
 
@@ -46,6 +47,13 @@ export default function PrivacyScreen() {
           </AppText>
         </View>
       ))}
+      <Button
+        label="Read the full privacy policy"
+        variant="secondary"
+        size="medium"
+        accessibilityHint="Opens in your browser"
+        onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+      />
       <View style={styles.section}>
         <SectionHeader title="Official consumer resources" />
         {Object.values(OFFICIAL_SOURCES).map((source) => (

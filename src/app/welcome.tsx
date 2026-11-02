@@ -1,29 +1,98 @@
-import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { type ReactNode, useState } from 'react';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  type SharedValue,
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 import { AppText } from '@/components/ui/app-text';
 import { BeaconMark } from '@/components/ui/beacon-mark';
 import { BottomBar } from '@/components/ui/bottom-bar';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
 import { createSampleCase } from '@/features/cases/case-service';
+import {
+  BeaconArt,
+  EvidenceArt,
+  NextStepArt,
+  RecordArt,
+  ReminderArt,
+} from '@/features/onboarding/walkthrough-art';
 import { setPreference } from '@/features/settings/preferences-repository';
+import { haptics } from '@/lib/haptics';
 import { showError } from '@/lib/dialogs';
 import { useTheme } from '@/theme/use-theme';
-import { fonts, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
 
-const STEPS = [
-  { title: 'Record the return', body: 'Retailer, item and amount in under 90 seconds.' },
+interface Page {
+  label: string;
+  title: string;
+  body: string;
+  art: ReactNode;
+}
+
+const PAGES: readonly Page[] = [
   {
-    title: 'Keep the evidence together',
-    body: 'Receipts, labels, tracking and replies, in one case.',
+    label: 'Welcome',
+    title: 'A clear next step for stuck refunds.',
+    body: 'Refund Beacon keeps each return in one place, so you always know what happened and what to do next.',
+    art: <BeaconArt />,
   },
-  { title: 'Know the next step', body: 'Every suggestion shows the facts it’s based on.' },
-] as const;
+  {
+    label: 'Record the return',
+    title: 'Log it in under 90 seconds.',
+    body: 'Add the retailer, item, amount and dates. Note how you sent it back, the carrier and the tracking number.',
+    art: <RecordArt />,
+  },
+  {
+    label: 'Keep the evidence',
+    title: 'Proof, all in one case.',
+    body: 'Attach receipts, return labels, tracking screenshots and retailer messages. A checklist shows what’s missing.',
+    art: <EvidenceArt />,
+  },
+  {
+    label: 'Know the next step',
+    title: 'One suggestion, with the reasons.',
+    body: 'Each case suggests a next step and the facts behind it. Draft a polite follow-up in seconds; you choose whether to send it.',
+    art: <NextStepArt />,
+  },
+  {
+    label: 'Stay on top of it',
+    title: 'Reminders, kept private.',
+    body: 'Set a reminder for the day to check in. Everything stays on this device. Refund Beacon doesn’t issue refunds or contact retailers for you.',
+    art: <ReminderArt />,
+  },
+];
 
+/**
+ * First-launch walkthrough, also reachable from Settings with `replay=1`. Pages swipe
+ * horizontally; the art drifts and fades with the finger, and the dots stretch toward the page.
+ */
 export default function WelcomeScreen() {
+  const { replay } = useLocalSearchParams<{ replay?: string }>();
+  const replaying = replay === '1';
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollX = useSharedValue(0);
+  const [page, setPage] = useState(0);
+  const last = page === PAGES.length - 1;
+
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollX.set(event.contentOffset.x);
+  });
+
+  const goTo = (next: number) => {
+    scrollRef.current?.scrollTo({ x: next * width, animated: true });
+    if (next !== page) haptics.select();
+    setPage(next);
+  };
 
   const finishOnboarding = () => setPreference('onboarding-complete', true);
 
@@ -44,74 +113,183 @@ export default function WelcomeScreen() {
     }
   };
 
+  const close = () => {
+    if (replaying) {
+      router.back();
+      return;
+    }
+    goTo(PAGES.length - 1);
+  };
+
   return (
     <Screen
+      scroll={false}
+      header={
+        <View style={styles.topBar}>
+          <BeaconMark />
+          {replaying || !last ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={close}
+              hitSlop={12}
+              style={({ pressed }) => pressed && styles.pressed}
+            >
+              <AppText variant="bodyStrong" tone="muted">
+                {replaying ? 'Close' : 'Skip'}
+              </AppText>
+            </Pressable>
+          ) : null}
+        </View>
+      }
       footer={
         <BottomBar>
           <View style={styles.actions}>
-            <Button
-              label="Create my first case"
-              icon="next"
-              iconPlacement="tile"
-              onPress={createFirstCase}
-            />
-            <Button
-              label="Explore a sample case"
-              variant="secondary"
-              size="medium"
-              onPress={exploreSample}
-            />
+            <Dots count={PAGES.length} scrollX={scrollX} width={width} />
+            {!last ? (
+              <Button
+                label="Next"
+                icon="next"
+                iconPlacement="tile"
+                onPress={() => goTo(page + 1)}
+              />
+            ) : replaying ? (
+              <Button
+                label="Done"
+                icon="check"
+                iconPlacement="tile"
+                onPress={() => router.back()}
+              />
+            ) : (
+              <>
+                <Button
+                  label="Create my first case"
+                  icon="next"
+                  iconPlacement="tile"
+                  onPress={createFirstCase}
+                />
+                <Button
+                  label="Explore a sample case"
+                  variant="secondary"
+                  size="medium"
+                  onPress={exploreSample}
+                />
+              </>
+            )}
           </View>
         </BottomBar>
       }
     >
-      <View style={styles.header}>
-        <BeaconMark />
-      </View>
-      <View style={styles.hero}>
-        <AppText variant="label" tone="muted">
-          For returns that haven’t been refunded
-        </AppText>
-        <AppText variant="display" accessibilityRole="header" style={styles.headline}>
-          A clear next step for stuck refunds.
-        </AppText>
-      </View>
-      <View style={[styles.steps, { borderTopColor: colors.line }]}>
-        {STEPS.map((step, index) => (
-          <View key={step.title} style={[styles.step, { borderBottomColor: colors.line }]}>
-            <AppText variant="mono" tone="muted" style={styles.stepIndex}>
-              {`0${index + 1}`}
-            </AppText>
-            <View style={styles.stepText}>
-              <AppText variant="subheading">{step.title}</AppText>
-              <AppText variant="caption" tone="muted">
-                {step.body}
-              </AppText>
-            </View>
-          </View>
+      <Animated.ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        onMomentumScrollEnd={(event) => {
+          const next = Math.round(event.nativeEvent.contentOffset.x / width);
+          if (next !== page) {
+            haptics.select();
+            setPage(next);
+          }
+        }}
+        style={{ backgroundColor: colors.background }}
+      >
+        {PAGES.map((item, index) => (
+          <PageView key={item.label} page={item} index={index} scrollX={scrollX} width={width} />
         ))}
-      </View>
-      <Card>
-        <AppText variant="caption" tone="muted">
-          <AppText variant="caption" style={styles.strong}>
-            Good to know.{' '}
-          </AppText>
-          RefundBeacon organizes your case. It doesn’t issue refunds, contact retailers for you, or
-          guarantee an outcome. Everything stays on this device — no account, inbox or bank access.
-        </AppText>
-      </Card>
+      </Animated.ScrollView>
     </Screen>
   );
 }
 
+interface PageViewProps {
+  page: Page;
+  index: number;
+  scrollX: SharedValue<number>;
+  width: number;
+}
+
+function PageView({ page, index, scrollX, width }: PageViewProps) {
+  const artStyle = useAnimatedStyle(() => {
+    const range = [(index - 1) * width, index * width, (index + 1) * width];
+    return {
+      opacity: interpolate(scrollX.get(), range, [0, 1, 0], Extrapolation.CLAMP),
+      transform: [
+        { translateX: interpolate(scrollX.get(), range, [width * 0.35, 0, -width * 0.35]) },
+        { scale: interpolate(scrollX.get(), range, [0.92, 1, 0.92], Extrapolation.CLAMP) },
+      ],
+    };
+  });
+  const textStyle = useAnimatedStyle(() => {
+    const range = [(index - 1) * width, index * width, (index + 1) * width];
+    return { opacity: interpolate(scrollX.get(), range, [0, 1, 0], Extrapolation.CLAMP) };
+  });
+
+  return (
+    <View style={[styles.page, { width }]}>
+      <Animated.View style={[styles.art, artStyle]}>{page.art}</Animated.View>
+      <Animated.View style={[styles.copy, textStyle]}>
+        <AppText variant="label" tone="muted">
+          {`0${index + 1} / 0${PAGES.length} · ${page.label}`}
+        </AppText>
+        <AppText variant="headline" accessibilityRole="header">
+          {page.title}
+        </AppText>
+        <AppText variant="body" tone="muted">
+          {page.body}
+        </AppText>
+      </Animated.View>
+    </View>
+  );
+}
+
+interface DotsProps {
+  count: number;
+  scrollX: SharedValue<number>;
+  width: number;
+}
+
+function Dots({ count, scrollX, width }: DotsProps) {
+  return (
+    <View
+      style={styles.dots}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {Array.from({ length: count }, (_, index) => (
+        <Dot key={index} index={index} scrollX={scrollX} width={width} />
+      ))}
+    </View>
+  );
+}
+
+function Dot({ index, scrollX, width }: Omit<DotsProps, 'count'> & { index: number }) {
+  const { colors } = useTheme();
+  const style = useAnimatedStyle(() => {
+    const range = [(index - 1) * width, index * width, (index + 1) * width];
+    return {
+      width: interpolate(scrollX.get(), range, [6, 24, 6], Extrapolation.CLAMP),
+      opacity: interpolate(scrollX.get(), range, [0.35, 1, 0.35], Extrapolation.CLAMP),
+    };
+  });
+  return <Animated.View style={[styles.dot, { backgroundColor: colors.ink }, style]} />;
+}
+
 const styles = StyleSheet.create({
-  header: { paddingTop: spacing.lg },
-  hero: { gap: spacing.md, paddingTop: spacing.xxl },
-  headline: { fontSize: 46, lineHeight: 48, letterSpacing: -2.2 },
-  steps: { borderTopWidth: 1 },
-  step: { flexDirection: 'row', gap: spacing.lg, paddingVertical: 14, borderBottomWidth: 1 },
-  stepIndex: { paddingTop: 3, fontSize: 12 },
-  stepText: { flex: 1 },
-  strong: { fontFamily: fonts.semibold },
-  actions: { flex: 1, gap: spacing.sm },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  pressed: { opacity: 0.55 },
+  page: { flex: 1, paddingHorizontal: spacing.xl, paddingBottom: spacing.lg, gap: spacing.xl },
+  art: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  copy: { gap: spacing.sm },
+  actions: { flex: 1, gap: spacing.md },
+  dots: { flexDirection: 'row', alignSelf: 'center', gap: 6, paddingBottom: spacing.xs },
+  dot: { height: 6, borderRadius: 3 },
 });

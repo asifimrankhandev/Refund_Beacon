@@ -50,6 +50,11 @@ const STEPS = [
 
 type ReminderChoice = 'none' | 'expected' | 'in-3-days' | 'in-1-week';
 
+/** The navigation action the discard guard intercepted (close, back or swipe-down). */
+type NavigationAction = Parameters<
+  NonNullable<Parameters<typeof usePreventRemove>[1]>
+>[0]['data']['action'];
+
 function reminderDate(choice: ReminderChoice, values: CaseFormValues): string | null {
   const today = todayIso();
   switch (choice) {
@@ -81,29 +86,36 @@ export default function NewCaseScreen() {
   const navigation = useNavigation();
   const dirty = Object.values(form.values).some((value) => value !== '');
   /**
-   * Case to open after an intentional exit (save, view existing). Setting it turns the discard
-   * guard off; navigation waits for the effect below so the guard can't intercept the dismiss.
+   * An intentional exit: open a case (save, view existing) or finish the action the user
+   * confirmed discarding. Setting it turns the discard guard off; navigation waits for the
+   * effect below, since dispatching while the guard is still on is intercepted again.
    */
-  const [exitTo, setExitTo] = useState<string | null>(null);
+  const [exit, setExit] = useState<
+    { kind: 'case'; caseId: string } | { kind: 'discard'; action: NavigationAction } | null
+  >(null);
 
   // Swipe-down, the close button and Android back all go through here: never lose input silently.
-  usePreventRemove(dirty && exitTo === null, ({ data }) => {
+  usePreventRemove(dirty && exit === null, ({ data }) => {
     void confirm({
       title: 'Discard this case?',
       message: 'Nothing has been saved yet.',
       confirmLabel: 'Discard',
       destructive: true,
     }).then((discard) => {
-      if (discard) navigation.dispatch(data.action);
+      if (discard) setExit({ kind: 'discard', action: data.action });
     });
   });
 
   useEffect(() => {
-    if (exitTo === null) return;
+    if (exit === null) return;
+    if (exit.kind === 'discard') {
+      navigation.dispatch(exit.action);
+      return;
+    }
     // Close the modal flow first so Back from the case returns to the list.
     router.dismiss();
-    router.push({ pathname: '/case/[id]', params: { id: exitTo } });
-  }, [exitTo]);
+    router.push({ pathname: '/case/[id]', params: { id: exit.caseId } });
+  }, [exit, navigation]);
 
   // Android back steps backwards through the wizard before leaving it.
   useEffect(() => {
@@ -145,7 +157,7 @@ export default function NewCaseScreen() {
         });
       }
       haptics.success();
-      setExitTo(id);
+      setExit({ kind: 'case', caseId: id });
     } catch (error) {
       showError('Couldn’t save the case', error);
       setSaving(false);
@@ -175,7 +187,7 @@ export default function NewCaseScreen() {
         { cancelable: true, onDismiss: () => resolve('cancel') },
       ),
     );
-    if (choice === 'view') setExitTo(match.id);
+    if (choice === 'view') setExit({ kind: 'case', caseId: match.id });
     if (choice === 'continue') setAcknowledgedDuplicate(key);
     return choice === 'continue';
   };

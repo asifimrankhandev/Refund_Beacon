@@ -45,7 +45,7 @@ export function getNextStep(input: NextStepInput): NextStep {
       key: 'dismissed',
       action: 'none',
       title: 'Choose your own next step',
-      body: 'You said the suggestion didn’t fit. Add an event or update the case and RefundBeacon will suggest again.',
+      body: 'You said the suggestion didn’t fit. Add an event or update the case and Refund Beacon will suggest again.',
       reasons: [],
     };
   }

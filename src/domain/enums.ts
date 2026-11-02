@@ -108,7 +108,7 @@ export const eventSource = labelled({
   user: 'You',
   retailer: 'Retailer-reported',
   carrier: 'Carrier-reported',
-  system: 'RefundBeacon',
+  system: 'Refund Beacon',
 });
 export type EventSource = (typeof eventSource.values)[number];
 

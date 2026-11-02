@@ -113,7 +113,7 @@ export default function FollowUpScreen() {
         />
       }
       footer={
-        <BottomBar note="Review before sending. RefundBeacon never sends messages for you.">
+        <BottomBar note="Review before sending. Refund Beacon never sends messages for you.">
           <Button label="Copy" variant="secondary" flex={1} onPress={() => void copy()} />
           <Button label="Share" icon="share" flex={1.4} onPress={() => void share()} />
         </BottomBar>

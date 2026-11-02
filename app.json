@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "RefundBeacon",
+    "name": "Refund Beacon",
     "slug": "refund-beacon",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,6 +24,7 @@
       },
       "predictiveBackGestureEnabled": true,
       "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
         "com.google.android.c2dm.permission.RECEIVE",
         "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
         "com.sec.android.provider.badge.permission.READ",
@@ -46,6 +47,7 @@
     },
     "plugins": [
       "expo-router",
+      ["expo-navigation-bar", { "enforceContrast": false }],
       [
         "expo-splash-screen",
         {
@@ -117,8 +119,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "RefundBeacon uses your photos only when you choose a receipt or screenshot to add as evidence.",
-          "cameraPermission": "RefundBeacon uses the camera only when you photograph a receipt or label to add as evidence.",
+          "photosPermission": "Refund Beacon uses your photos only when you choose a receipt or screenshot to add as evidence.",
+          "cameraPermission": "Refund Beacon uses the camera only when you photograph a receipt or label to add as evidence.",
           "microphonePermission": false
         }
       ],

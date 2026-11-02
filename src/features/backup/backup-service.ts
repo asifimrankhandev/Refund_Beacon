@@ -77,7 +77,7 @@ export async function shareBackup() {
     `refund-beacon-backup-${todayIso()}.json`,
     JSON.stringify(backup),
   );
-  await shareFile(file, 'application/json', 'Save your RefundBeacon backup');
+  await shareFile(file, 'application/json', 'Save your Refund Beacon backup');
 }
 
 /** Spreadsheet-friendly list of all cases (no evidence files). */
@@ -107,7 +107,7 @@ export async function pickBackup(): Promise<Backup | null> {
   try {
     parsed = JSON.parse(await new File(asset.uri).text());
   } catch {
-    throw new BackupError('This file isn’t a RefundBeacon backup.');
+    throw new BackupError('This file isn’t a Refund Beacon backup.');
   } finally {
     // The picker's copy holds every case and file; it isn't needed once read.
     clearPickerCache();

@@ -172,7 +172,7 @@ export default function HomeScreen() {
       ) : null}
 
       <Notice icon="shield">
-        Stored only on this device. RefundBeacon organizes your case — it doesn’t issue refunds or
+        Stored only on this device. Refund Beacon organizes your case — it doesn’t issue refunds or
         contact retailers for you.
       </Notice>
     </Screen>

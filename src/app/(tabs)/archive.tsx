@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { FlatList, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
@@ -16,6 +17,7 @@ export default function ArchiveScreen() {
   const home = useHomeData();
   const archived = useArchivedCases();
   const items = view === 'resolved' ? home.resolved : archived.summaries;
+  const tabBarHeight = useBottomTabBarHeight();
 
   return (
     <Screen scroll={false}>
@@ -23,7 +25,7 @@ export default function ArchiveScreen() {
         data={items}
         keyExtractor={(item) => item.refundCase.id}
         renderItem={({ item }) => <CaseRow summary={item} showProgress={false} />}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + spacing.lg }]}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.headerBlock}>

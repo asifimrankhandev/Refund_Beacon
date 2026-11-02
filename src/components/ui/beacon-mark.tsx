@@ -16,7 +16,7 @@ export function BeaconMark() {
       style={styles.row}
       accessible
       accessibilityRole="header"
-      accessibilityLabel="RefundBeacon"
+      accessibilityLabel="Refund Beacon"
     >
       <View style={styles.mark}>
         <View style={[styles.beacon, { backgroundColor: colors.accent }]} />
@@ -25,7 +25,7 @@ export function BeaconMark() {
         ))}
       </View>
       <AppText variant="subheading" style={styles.word}>
-        RefundBeacon
+        Refund Beacon
       </AppText>
     </View>
   );
