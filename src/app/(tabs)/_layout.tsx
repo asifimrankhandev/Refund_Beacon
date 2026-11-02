@@ -17,6 +17,8 @@ export default function TabsLayout() {
       tintColor={colors.ink}
       iconColor={{ default: colors.muted, selected: colors.ink }}
       indicatorColor={colors.surfaceMuted}
+      // Android shows only the selected tab's label by default; icons alone are ambiguous.
+      labelVisibilityMode="labeled"
       labelStyle={{
         default: { color: colors.muted, fontFamily: fonts.medium },
         selected: { color: colors.ink, fontFamily: fonts.semibold },

@@ -5,7 +5,10 @@ import { fonts, spacing } from '@/theme/tokens';
 
 import { AppText } from './app-text';
 
-/** Wordmark: orange beacon dot with a soft halo. */
+/** Receipt lines under the beacon, longest first, as in the app icon. */
+const LINE_WIDTHS = [20, 14, 8];
+
+/** Wordmark: the app icon's beacon rising over receipt lines, then the name. */
 export function BeaconMark() {
   const { colors } = useTheme();
   return (
@@ -15,8 +18,11 @@ export function BeaconMark() {
       accessibilityRole="header"
       accessibilityLabel="RefundBeacon"
     >
-      <View style={[styles.halo, { backgroundColor: colors.accentHalo }]}>
-        <View style={[styles.dot, { backgroundColor: colors.accent }]} />
+      <View style={styles.mark}>
+        <View style={[styles.beacon, { backgroundColor: colors.accent }]} />
+        {LINE_WIDTHS.map((width) => (
+          <View key={width} style={[styles.line, { width, backgroundColor: colors.ink }]} />
+        ))}
       </View>
       <AppText variant="subheading" style={styles.word}>
         RefundBeacon
@@ -27,7 +33,8 @@ export function BeaconMark() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  halo: { width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  dot: { width: 12, height: 12, borderRadius: 6 },
+  mark: { width: 20, alignItems: 'center', gap: 1.5 },
+  beacon: { width: 20, height: 10, borderTopLeftRadius: 10, borderTopRightRadius: 10 },
+  line: { height: 2.5, borderRadius: 1.25 },
   word: { fontFamily: fonts.bold, fontSize: 17, letterSpacing: -0.4 },
 });
