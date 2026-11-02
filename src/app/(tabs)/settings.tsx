@@ -160,18 +160,16 @@ export default function SettingsScreen() {
       </AppText>
 
       <SettingsGroup title="App">
-        <SettingsSlot label="Appearance">
-          <View style={styles.appearance}>
-            <SegmentedControl
-              accessibilityLabel="Appearance"
-              value={preferences.appearance}
-              onChange={(value) => setPreference('appearance', value)}
-              options={appearance.values.map((value) => ({
-                value,
-                label: appearance.labels[value],
-              }))}
-            />
-          </View>
+        <SettingsSlot label="Appearance" stacked>
+          <SegmentedControl
+            accessibilityLabel="Appearance"
+            value={preferences.appearance}
+            onChange={(value) => setPreference('appearance', value)}
+            options={appearance.values.map((value) => ({
+              value,
+              label: appearance.labels[value],
+            }))}
+          />
         </SettingsSlot>
         <SettingsRow label="Currency" value="US Dollar (USD)" />
         <SettingsRow label="Privacy & terms" onPress={() => router.push('/privacy')} />
@@ -198,6 +196,5 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   header: { gap: spacing.sm, paddingTop: spacing.xl },
-  appearance: { width: 210 },
   footnote: { marginTop: -spacing.sm },
 });

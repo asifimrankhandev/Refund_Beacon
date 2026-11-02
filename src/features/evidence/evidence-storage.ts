@@ -15,7 +15,7 @@ export const ALLOWED_MIME_TYPES: Readonly<Record<string, string>> = {
 
 export class EvidenceFileError extends Error {
   constructor(
-    readonly reason: 'too-large' | 'unsupported' | 'missing' | 'storage',
+    readonly reason: 'too-large' | 'unsupported' | 'missing' | 'storage' | 'permission',
     message: string,
   ) {
     super(message);
@@ -83,6 +83,20 @@ export function deleteEvidenceFile(storedFileName: string): void {
 export function pruneEvidenceFiles(keep: ReadonlySet<string>): void {
   for (const entry of evidenceDirectory().list()) {
     if (entry instanceof File && !keep.has(entry.name)) entry.delete();
+  }
+}
+
+/** Cache folders where the system pickers leave their own copy of every chosen file. */
+const PICKER_CACHE_FOLDERS = ['DocumentPicker', 'ImagePicker'];
+
+/** Deletes the pickers' temporary copies so stored evidence is the only copy on the device. */
+export function clearPickerCache(): void {
+  for (const name of PICKER_CACHE_FOLDERS) {
+    const directory = new Directory(Paths.cache, name);
+    if (!directory.exists) continue;
+    for (const entry of directory.list()) {
+      if (entry instanceof File) entry.delete();
+    }
   }
 }
 

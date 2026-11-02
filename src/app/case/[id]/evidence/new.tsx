@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { BottomBar } from '@/components/ui/bottom-bar';
@@ -17,6 +17,7 @@ import {
 } from '@/features/evidence/components/evidence-fields';
 import { EvidenceThumbnail } from '@/features/evidence/components/evidence-thumbnail';
 import { addEvidence } from '@/features/evidence/evidence-repository';
+import { clearPickerCache, EvidenceFileError } from '@/features/evidence/evidence-storage';
 import {
   type EvidenceSource,
   type PickedFile,
@@ -44,9 +45,19 @@ export default function NewEvidenceScreen() {
       const picked = await pickEvidence(source);
       if (picked) setFile(picked);
     } catch (error) {
-      showError('Couldn’t use that file', error);
+      if (error instanceof EvidenceFileError && error.reason === 'permission') {
+        Alert.alert('Camera access is off', error.message, [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => void Linking.openSettings() },
+        ]);
+      } else {
+        showError('Couldn’t use that file', error);
+      }
     }
   }, []);
+
+  // Saved, cancelled or rejected, the picker's temporary copy goes when this screen does.
+  useEffect(() => clearPickerCache, []);
 
   useEffect(() => {
     // Opening from "Take photo" goes straight to the camera, once.

@@ -58,8 +58,8 @@ export async function pickEvidence(source: EvidenceSource): Promise<PickedFile |
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
         throw new EvidenceFileError(
-          'unsupported',
-          'Camera access is off. Allow it in Settings, or choose an existing photo instead.',
+          'permission',
+          'Allow camera access in Settings, or choose an existing photo instead.',
         );
       }
     }
@@ -68,10 +68,22 @@ export async function pickEvidence(source: EvidenceSource): Promise<PickedFile |
       quality: 0.85,
       exif: false,
     };
-    const result =
-      source === 'camera'
-        ? await ImagePicker.launchCameraAsync(options)
-        : await ImagePicker.launchImageLibraryAsync(options);
+    let result: ImagePicker.ImagePickerResult;
+    try {
+      result =
+        source === 'camera'
+          ? await ImagePicker.launchCameraAsync(options)
+          : await ImagePicker.launchImageLibraryAsync(options);
+    } catch (error) {
+      // Android 9 and older also need storage access for the camera to save its photo.
+      if ((error as { code?: unknown }).code === 'ERR_USER_REJECTED_PERMISSIONS') {
+        throw new EvidenceFileError(
+          'permission',
+          'Allow camera and storage access in Settings, or choose an existing photo instead.',
+        );
+      }
+      throw error;
+    }
     const asset = result.canceled ? null : result.assets[0];
     if (asset) {
       const name = asset.fileName ?? `photo-${Date.now()}.jpg`;

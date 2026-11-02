@@ -1,5 +1,5 @@
 import { router, useNavigation, usePreventRemove } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, BackHandler, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
@@ -80,15 +80,14 @@ export default function NewCaseScreen() {
 
   const navigation = useNavigation();
   const dirty = Object.values(form.values).some((value) => value !== '');
-  /** Set right before an intentional exit (save, view existing) so it isn't intercepted. */
-  const leavingRef = useRef(false);
+  /**
+   * Case to open after an intentional exit (save, view existing). Setting it turns the discard
+   * guard off; navigation waits for the effect below so the guard can't intercept the dismiss.
+   */
+  const [exitTo, setExitTo] = useState<string | null>(null);
 
   // Swipe-down, the close button and Android back all go through here: never lose input silently.
-  usePreventRemove(dirty, ({ data }) => {
-    if (leavingRef.current) {
-      navigation.dispatch(data.action);
-      return;
-    }
+  usePreventRemove(dirty && exitTo === null, ({ data }) => {
     void confirm({
       title: 'Discard this case?',
       message: 'Nothing has been saved yet.',
@@ -98,6 +97,13 @@ export default function NewCaseScreen() {
       if (discard) navigation.dispatch(data.action);
     });
   });
+
+  useEffect(() => {
+    if (exitTo === null) return;
+    // Close the modal flow first so Back from the case returns to the list.
+    router.dismiss();
+    router.push({ pathname: '/case/[id]', params: { id: exitTo } });
+  }, [exitTo]);
 
   // Android back steps backwards through the wizard before leaving it.
   useEffect(() => {
@@ -139,10 +145,7 @@ export default function NewCaseScreen() {
         });
       }
       haptics.success();
-      // Close the modal flow first so Back from the new case returns to the list.
-      leavingRef.current = true;
-      router.dismiss();
-      router.push({ pathname: '/case/[id]', params: { id } });
+      setExitTo(id);
     } catch (error) {
       showError('Couldn’t save the case', error);
       setSaving(false);
@@ -172,11 +175,7 @@ export default function NewCaseScreen() {
         { cancelable: true, onDismiss: () => resolve('cancel') },
       ),
     );
-    if (choice === 'view') {
-      leavingRef.current = true;
-      router.dismiss();
-      router.push({ pathname: '/case/[id]', params: { id: match.id } });
-    }
+    if (choice === 'view') setExitTo(match.id);
     if (choice === 'continue') setAcknowledgedDuplicate(key);
     return choice === 'continue';
   };
@@ -253,7 +252,7 @@ export default function NewCaseScreen() {
             />
           ) : null}
           <Button
-            label={isLast ? 'Save case' : step === 2 ? 'Continue to reminder' : 'Continue'}
+            label={isLast ? 'Save case' : 'Continue'}
             icon={isLast ? 'check' : 'next'}
             iconPlacement="tile"
             flex={1}

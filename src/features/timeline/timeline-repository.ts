@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/db/client';
-import { timelineEvents } from '@/db/schema';
+import { cases, timelineEvents } from '@/db/schema';
 import { statusAfterHandOff } from '@/domain/case-state';
+import { toIsoDate } from '@/domain/dates';
 import {
   type CaseStatus,
   type EventSource,
@@ -46,6 +47,13 @@ export function addTimelineEvent(input: NewEventInput) {
   if (!refundCase) throw new Error('Case not found');
   db.transaction((tx) => {
     insertEvent(tx, input);
+    // A logged hand-over is the case's hand-over date too, so drafts and summaries can cite it.
+    if (input.type === 'item-dropped-off' && !refundCase.handoffDate) {
+      tx.update(cases)
+        .set({ handoffDate: toIsoDate(new Date(input.occurredAt)) })
+        .where(eq(cases.id, input.caseId))
+        .run();
+    }
     const nextStatus = statusAfterEvent(refundCase, input.type);
     if (nextStatus && nextStatus !== refundCase.status) {
       setCaseStatus(tx, input.caseId, nextStatus);

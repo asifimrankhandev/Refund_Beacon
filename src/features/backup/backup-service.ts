@@ -1,5 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 import { db, type Transaction } from '@/db/client';
@@ -15,6 +15,7 @@ import { buildCasesCsv } from '@/domain/case-summary';
 import { todayIso } from '@/domain/dates';
 import type { RefundEntry } from '@/domain/models';
 import {
+  clearPickerCache,
   deleteAllEvidenceFiles,
   getEvidenceFile,
   pruneEvidenceFiles,
@@ -107,6 +108,9 @@ export async function pickBackup(): Promise<Backup | null> {
     parsed = JSON.parse(await new File(asset.uri).text());
   } catch {
     throw new BackupError('This file isn’t a RefundBeacon backup.');
+  } finally {
+    // The picker's copy holds every case and file; it isn't needed once read.
+    clearPickerCache();
   }
   const validation = backupSchema.safeParse(parsed);
   if (!validation.success) {
@@ -153,9 +157,18 @@ export async function restoreBackup(backup: Backup) {
   return { caseCount: data.cases.length, missingFiles: data.evidence.length - staged.length };
 }
 
+/** Prefixes of the summaries, exports and backups this app writes to its cache for sharing. */
+const SHARED_FILE_PREFIXES = ['refund-case-', 'refund-beacon-'];
+
 /** Removes every case, evidence file, reminder and preference from this device. */
 export async function deleteAllData() {
   await cancelAllNotifications();
   db.transaction(clearAllRows);
   deleteAllEvidenceFiles();
+  clearPickerCache();
+  for (const entry of new Directory(Paths.cache).list()) {
+    if (entry instanceof File && SHARED_FILE_PREFIXES.some((p) => entry.name.startsWith(p))) {
+      entry.delete();
+    }
+  }
 }

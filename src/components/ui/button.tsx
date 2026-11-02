@@ -131,10 +131,13 @@ export function Button({
                 color={variant === 'primary' ? colors.accent : colors[scheme.text]}
               />
             ) : null}
+            {/* Shrink a long label to fit (side-by-side buttons on narrow phones) before truncating. */}
             <AppText
               variant="button"
               tone={scheme.text}
               numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
               style={size === 'small' ? styles.smallLabel : undefined}
             >
               {label}

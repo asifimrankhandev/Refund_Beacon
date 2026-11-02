@@ -118,10 +118,19 @@ export function ToggleRow({ label, value, onValueChange, description, disabled }
   );
 }
 
-export function SettingsSlot({ label, children }: { label: string; children: ReactNode }) {
+export function SettingsSlot({
+  label,
+  stacked = false,
+  children,
+}: {
+  label: string;
+  /** Puts a wide control under its label so neither is squeezed on narrow phones. */
+  stacked?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <View style={styles.row}>
-      <AppText variant="body" style={styles.rowLabel}>
+    <View style={stacked ? styles.stackedRow : styles.row}>
+      <AppText variant="body" style={stacked ? undefined : styles.rowLabel}>
         {label}
       </AppText>
       {children}
@@ -140,4 +149,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   rowLabel: { flex: 1 },
+  stackedRow: { gap: spacing.sm, paddingVertical: spacing.md },
 });

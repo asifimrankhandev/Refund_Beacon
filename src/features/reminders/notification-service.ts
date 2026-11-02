@@ -102,7 +102,11 @@ export async function reconcileNotifications(
 ) {
   const scheduled = await getAllScheduledNotificationsAsync();
   const wanted = new Map(pending.map((item) => [item.reminder.id, item]));
-  const scheduledIds = new Set(scheduled.map((request) => request.identifier));
+  // On Android this list is expo's own store, which outlives the alarms the OS drops on
+  // force-stop or OEM battery kills. Re-scheduling by the same identifier replaces the alarm.
+  const scheduledIds = new Set(
+    Platform.OS === 'android' ? [] : scheduled.map((request) => request.identifier),
+  );
 
   await Promise.all(
     scheduled
