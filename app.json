@@ -22,7 +22,27 @@
         "foregroundImage": "./assets/images/adaptive-icon-foreground.png",
         "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": true,
+      "blockedPermissions": [
+        "com.google.android.c2dm.permission.RECEIVE",
+        "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+        "com.sec.android.provider.badge.permission.READ",
+        "com.sec.android.provider.badge.permission.WRITE",
+        "com.htc.launcher.permission.READ_SETTINGS",
+        "com.htc.launcher.permission.UPDATE_SHORTCUT",
+        "com.sonyericsson.home.permission.BROADCAST_BADGE",
+        "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE",
+        "com.anddoes.launcher.permission.UPDATE_COUNT",
+        "com.majeur.launcher.permission.UPDATE_BADGE",
+        "com.huawei.android.launcher.permission.CHANGE_BADGE",
+        "com.huawei.android.launcher.permission.READ_SETTINGS",
+        "com.huawei.android.launcher.permission.WRITE_SETTINGS",
+        "android.permission.READ_APP_BADGE",
+        "com.oppo.launcher.permission.READ_SETTINGS",
+        "com.oppo.launcher.permission.WRITE_SETTINGS",
+        "me.everything.badger.permission.BADGE_COUNT_READ",
+        "me.everything.badger.permission.BADGE_COUNT_WRITE"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -40,7 +60,53 @@
       ],
       "expo-sqlite",
       "expo-sharing",
-      "@react-native-community/datetimepicker",
+      [
+        "@react-native-community/datetimepicker",
+        {
+          "android": {
+            "datePicker": {
+              "colorAccent": {
+                "light": "#0F0F0F",
+                "dark": "#FF6A33"
+              },
+              "windowBackground": {
+                "light": "#FFFFFF",
+                "dark": "#1A1A18"
+              },
+              "textColorPrimary": {
+                "light": "#0F0F0F",
+                "dark": "#F2F2EE"
+              },
+              "textColorSecondary": {
+                "light": "#5E5E5A",
+                "dark": "#A3A39C"
+              }
+            },
+            "timePicker": {
+              "background": {
+                "light": "#FFFFFF",
+                "dark": "#1A1A18"
+              },
+              "headerBackground": {
+                "light": "#0F0F0F",
+                "dark": "#232320"
+              },
+              "numbersBackgroundColor": {
+                "light": "#EDEDE8",
+                "dark": "#232320"
+              },
+              "numbersTextColor": {
+                "light": "#0F0F0F",
+                "dark": "#F2F2EE"
+              },
+              "numbersSelectorColor": {
+                "light": "#FF5A1F",
+                "dark": "#FF6A33"
+              }
+            }
+          }
+        }
+      ],
       [
         "expo-notifications",
         {
@@ -55,7 +121,8 @@
           "cameraPermission": "RefundBeacon uses the camera only when you photograph a receipt or label to add as evidence.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

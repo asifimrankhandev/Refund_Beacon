@@ -2,7 +2,6 @@ import { useScrollToTop } from 'expo-router';
 import { type ComponentRef, type ReactNode, useRef } from 'react';
 import {
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -56,7 +55,8 @@ export function Screen({
     <SafeAreaView edges={edges} style={[styles.fill, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={styles.fill}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        // Edge-to-edge Android no longer resizes the window for the keyboard, so pad on both.
+        behavior="padding"
       >
         {header}
         {content}

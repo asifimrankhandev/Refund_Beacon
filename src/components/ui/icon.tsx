@@ -29,7 +29,7 @@ const ICONS = {
   receipt: { ios: 'doc.plaintext', android: 'receipt_long' },
   search: { ios: 'magnifyingglass', android: 'search' },
   settings: { ios: 'gearshape', android: 'settings' },
-  share: { ios: 'square.and.arrow.up', android: 'ios_share' },
+  share: { ios: 'square.and.arrow.up', android: 'share' },
   shield: { ios: 'lock.shield', android: 'shield' },
   trash: { ios: 'trash', android: 'delete' },
   truck: { ios: 'shippingbox', android: 'local_shipping' },
